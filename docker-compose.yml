@@ -1,0 +1,26 @@
+services:
+    postgres:
+        image: timescale/timescaledb:latest-pg16
+        restart: always
+        ports:
+            - '54320:5432'
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: apassword
+            POSTGRES_DB: nextjsdemo
+        volumes:
+            - db_data:/var/lib/postgresql/data
+    pg_proxy:
+        image: ghcr.io/neondatabase/wsproxy:latest
+        environment:
+            APPEND_PORT: 'postgres:5432'
+            ALLOW_ADDR_REGEX: '.*'
+            LOG_TRAFFIC: 'true'
+        ports:
+            # Expose the WebSocket proxy port to the host machine,
+            # this is where @vercel/postgres will connect
+            - '54330:80'
+        depends_on:
+            - postgres
+volumes:
+    db_data:
